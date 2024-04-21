@@ -16,8 +16,30 @@ run.py can be used to test your submission.
 """
 
 # List your libraries and modules here. Don't forget to update environment.yml!
+# libraries for model evaluation
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.linear_model import SGDClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis    
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, HistGradientBoostingClassifier
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neural_network import MLPClassifier
+from xgboost import XGBClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import confusion_matrix
+import lightgbm as lgb
+
 import joblib
 
 
@@ -35,20 +57,36 @@ def clean_df(df, background_df=None):
     """
 
     ## This script contains a bare minimum working example
-    # Create new variable with age
-    df["age"] = 2024 - df["birthyear_bg"]
-
-    # Imputing missing values in age with the mean
-    df["age"] = df["age"].fillna(df["age"].mean())
 
     # Selecting variables for modelling
     keepcols = [
         "nomem_encr",  # ID variable required for predictions,
-        "age"          # newly created variable
-    ] 
+        "cf20m128",
+        "birthyear_bg",
+        "cf20m004", 
+        "ci20m326", 
+        "ch20m002", 
+        "ca20g082", 
+        "age_bg", 
+        "cw20m002",
+        "brutoink_f_2020",
+        "nettoink_f_2020",
+        "nettohh_f_2020",
+        "nettoink_2020",
+        "ci20m002",
+        "cw20m003",
+        "brutohh_f_2020",
+        "cw20m576",
+        "cf20m024",
+        "burgstat_2020",
+        "cf20m009",
+        "cf20m397",
+        "oplcat_2019",
+        "burgstat_2019",
+            ] 
 
     # Keeping data with variables selected
-    df = df[keepcols]
+    df = df[keepcols].dropna(inplace=False)
 
     return df
 
