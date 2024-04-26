@@ -19,7 +19,7 @@ run.py can be used to test your submission.
 # libraries for model evaluation
 # import numpy as np
 import pandas as pd
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import lightgbm as lgb
 
 import joblib
@@ -41,36 +41,14 @@ def clean_df(df, background_df=None):
     ## This script contains a bare minimum working example
 
     # load variables names
-    cols_names = pd.read_csv('variable_name.csv')
-
-    # keepcols = [
-    #     "nomem_encr",  # ID variable required for predictions,
-    #     "cf20m128",
-    #     "birthyear_bg",
-    #     "cf20m004", 
-    #     "ci20m326", 
-    #     "ch20m002", 
-    #     "ca20g082", 
-    #     "age_bg", 
-    #     "cw20m002",
-    #     "brutoink_f_2020",
-    #     "nettoink_f_2020",
-    #     "nettohh_f_2020",
-    #     "nettoink_2020",
-    #     "ci20m002",
-    #     "cw20m003",
-    #     "brutohh_f_2020",
-    #     "cw20m576",
-    #     "cf20m024",
-    #     "burgstat_2020",
-    #     "cf20m009",
-    #     "cf20m397",
-    #     "oplcat_2019",
-    #     "burgstat_2019",
-    #         ] 
+    # cols_names = pd.read_csv('variable_name.csv')
+    model = joblib.load("model.joblib")
+    keepcols = used_features = model.feature_name_
+    keepcols.append("nomem_encr")
+    print(keepcols)
 
     # Keeping data with variables selected
-    df = df[cols_names]
+    df = df[keepcols]
 
     return df
 
