@@ -17,9 +17,9 @@ run.py can be used to test your submission.
 
 # List your libraries and modules here. Don't forget to update environment.yml!
 # libraries for model evaluation
-import numpy as np
+# import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import lightgbm as lgb
 
 import joblib
