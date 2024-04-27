@@ -43,7 +43,7 @@ def clean_df(df, background_df=None):
     # load variables names
     # cols_names = pd.read_csv('variable_name.csv')
     model = joblib.load("model.joblib")
-    keepcols = used_features = model.feature_name_
+    keepcols = model.feature_name_
     keepcols.append("nomem_encr")
     print(keepcols)
 
