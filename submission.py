@@ -38,7 +38,16 @@ def clean_df(df, background_df=None):
     pd.DataFrame: The cleaned dataframe with only the necessary columns and processed variables.
     """
 
-    ## This script contains a bare minimum working example
+    ## joining background data and df
+    # Matching the 'nomem_encr' values in the target data
+
+    background_df = background_df[background_df['nomem_encr'].isin(df['nomem_encr'])]
+
+    # selecting only 202012 data
+    background_df = background_df[background_df['wave'] == 202012]
+    
+    # mergin the target and the train data
+    df = pd.merge(df,background_df, how='left', on='nomem_encr')
 
     # load variables names
     # cols_names = pd.read_csv('variable_name.csv')

@@ -32,8 +32,10 @@ def train_save_model(cleaned_df, outcome_df):
     # Filter cases for whom the outcome is not available
     model_df = model_df[~model_df['new_child'].isna()]  
     
-    # Logistic regression model
-    model = lgb.LGBMClassifier()
+    # model
+    # {'learning_rate': 0.1, 'max_depth': 20, 'n_estimators': 100, 'num_leaves': 31}
+
+    model = lgb.LGBMClassifier(random_state=12345, learning_rate=0.1, max_depth=20, n_estimators=100, num_leaves=31)
 
     # Fit the model
     model.fit(model_df.drop(['new_child','nomem_encr'], axis=1),
@@ -44,12 +46,8 @@ def train_save_model(cleaned_df, outcome_df):
 
 
 # Load the cleaned data and outcome data
-cleaned_df = pd.read_csv(r"C:\Users\guerraur\OneDrive - Tilburg University\Data_challenge\codes\cleaned_l_GBM.csv")
-outcome_df = pd.read_csv(r"C:\Users\guerraur\OneDrive - Tilburg University\Data_challenge\codes\outcome_l_GBM.csv")
-
-# save the columns name in the cleaned data
-pd.DataFrame(cleaned_df.columns.tolist()).to_csv('variable_name.csv', index=False)
-
+cleaned_df = pd.read_csv(r"C:\Users\guerraur\OneDrive - Tilburg University\Data_challenge\cleaned_data\cleaned_lGBM.csv")
+outcome_df = pd.read_csv(r"C:\Users\guerraur\OneDrive - Tilburg University\Data_challenge\cleaned_data\outcome.csv")
 
 # Train and save the model
 train_save_model(cleaned_df, outcome_df)
