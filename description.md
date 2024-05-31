@@ -1,71 +1,101 @@
-# Description of submission
+# Description of Submission
 
-## Data Processing
+## Overview
 
-### Loading Data
-The initial data loading involves three primary datasets:
-1. **Target Data (`PreFer_train_outcome.csv`)**: Contains outcome variables and is used as the primary dataset for merging and analysis.
-2. **Training Data (`PreFer_train_data.csv`)**: Includes features linked to the outcomes, loaded for potential feature engineering (commented out in the provided snippet).
-3. **Background Data (`PreFer_train_background_data.csv`)**: Contains additional contextual information about the subjects.
+### Project Goal
+The primary objective of this data challenge is to enhance the predictability of individual-level fertility behaviors using advanced data-driven methodologies. By improving our predictive capabilities, we aim to deepen our understanding of the factors influencing fertility decisions and trends.
 
-### Cleaning and Preprocessing
-#### Target Data
-- Loaded from the `PreFer_train_outcome.csv` file.
-- All rows containing any missing values are removed to ensure the quality and completeness of the data used in further analysis.
+### Challenges and Methodological Approach
+One significant challenge encountered was the extensive amount of missing data within the provided datasets. Instead of employing imputation techniques, which could potentially introduce biases and inflate performance metrics, we opted for a more conservative approach by selecting variables with less than 20% missing data. This strategy prevents the model from learning from artificially created data, thereby maintaining the integrity and reliability of our predictive analysis.
 
-#### Background Data
-- Loaded from the `PreFer_train_background_data.csv` file.
-- Filtered to include only records that match the `nomem_encr` identifiers found in the cleaned target data. This ensures consistency and relevance in the combined dataset.
-- Further filtered to retain records from the specific wave `202012`, aligning the data with a specific time frame for analysis.
+### Model Selection and Evolution
+#### Phase 1
+In the initial phase, we employed the LightGBM algorithm for both variable selection and prediction. LightGBM is renowned for its ability to handle datasets with minor missing values directly within the algorithm, eliminating the need for preliminary data imputation. This feature, along with its robustness and accuracy across various conditions and time frames, makes LightGBM an ideal choice for our objectives.
 
-### Merging Data
-- The cleaned target data and the filtered background data are merged on the `nomem_encr` field using a left join. This enriches the target dataset with contextual background data relevant to each record.
+During our first submission, we observed that the model performed well, indicating promising predictive accuracy. However, we recognized the potential for selection bias, where variables might have been chosen more by chance than for their actual predictive power. In subsequent iterations, we refined our approach to mitigate this bias, resulting in a more robust and reliable model.
 
-### Data Type Standardization
-To ensure consistency and facilitate analysis, various fields are converted to appropriate data types:
-- Categorical conversions are applied to fields such as `positie`, `lftdcat`, `aantalhh`, `aantalki`, `partner`, and many others to reflect their non-numeric nature.
-- Integer conversions are applied to fields such as `brutoink`, `nettoink`, `age_imp`, and others that represent numeric values, ensuring they are treated correctly in any computational context.
+#### Phase 2
+For the next phase of the challenge, we plan to expand our methodology by incorporating additional algorithms like XGBoost and HGBoost. These models are chosen for their similar capabilities in handling missing data and for their proven effectiveness in generalizing predictive performance across different datasets and conditions.
 
-### Saving the Cleaned Data
-- The fully processed and merged dataset is saved to `cleaned_background_data.csv`, making it available for further analysis or model training without additional preprocessing steps.
+## Data Cleaning 
 
-### Proportion of Missing Values
-- The proportion of missing values is calculated for each column in the merged dataset, allowing for a quick assessment of data completeness post-processing.
+### Process
+- **Data Integration**: Combined training data (`PreFer_train_data.csv`) and background data (`PreFer_train_background_data.csv`) to create a comprehensive dataset. This merge ensures a richer set of features which could potentially improve model accuracy.
+- **Filtering Data**: Selected only those records that match the `nomem_encr` identifiers in the non-null entries of the target dataset (`PreFer_train_outcome.csv`).
+- **Handling Missing Data**: Columns with more than 20% missing values were excluded to maintain data quality and reliability.
+- **Type Correction**: Utilized a codebook to assign the correct data types to variables, enhancing the consistency of the dataset for analysis.
 
-### Summary
-The processing steps taken ensure that the data is clean, consistent, and specifically tailored to the needs of the project, focusing on relevant time frames and observations. This preprocessing foundation supports reliable and robust analysis or modeling in subsequent stages.
+### Rationale
+The data cleaning steps were designed to ensure that the dataset was robust, with comprehensive coverage of features and minimal missing data. This process is crucial for maintaining the integrity of the modeling phase, particularly in handling large datasets which might contain inconsistencies.
 
 ## Variable Selection
 
-### Overview
-Variable selection was performed to identify the most relevant features for predicting the target variable `new_child` from the dataset. This process helps in reducing model complexity and improving interpretability.
+### Process
+- **Data Preparation**: The cleaned training dataset was merged with the outcome dataset to align the features with the target variable `new_child`.
+- **Adding Noise Variables**: To benchmark the importance of each feature, two noise variables were introduced. `noise1` follows a normal distribution, and `noise2` follows a uniform distribution.
+- **Model-Based Feature Importance**: A LightGBM classifier was utilized across multiple parameter settings to evaluate the importance of each feature relative to the noise variables. This was achieved through a simulation with a predefined number of iterations, ensuring robustness in the variable importance estimation.
+- **Importance Calculation**: For each simulation, the model was trained, and the feature importances were recorded. Features were deemed significant if their importance exceeded that of both noise variables. This importance was then scaled relative to the sum of all importances to normalize across different model runs.
+- **Frequency and Relevance of Selection**: Each feature's selection frequency and scaled importance were calculated across all simulations. Features frequently identified as important were retained for further analysis.
 
-### Methodology
-1. **Data Preparation**:
-   - Data was loaded from `train_na_20.csv`, which presumably has been preprocessed to handle missing values up to a certain threshold (20% as suggested by the filename).
-   - Initial data exploration was conducted to understand the data structure and types.
+### Rationale
+The selection of variables through model-based importance ensures that only the most predictive features are retained, reducing model complexity and potential overfitting. By comparing feature importance against noise variables, we can objectively assess whether a feature provides meaningful information or merely adds noise. This method is particularly effective in large datasets where distinguishing signal from noise is crucial. Additionally, using a grid of hyperparameters for LightGBM allows for a comprehensive evaluation under various modeling conditions, further validating the robustness of the selected features.
 
-2. **Exclusion of Non-Numeric Variables**:
-   - All columns of type `object` were identified and listed for exclusion from the feature set, as they are non-numeric and not directly usable in LightGBM without encoding.
-   - Specific variables `new_child` and `nomem_encr` were also manually added to the exclusion list due to their nature (identifier and target variable).
+## Model Estimation
 
-3. **Feature Engineering**:
-   - Two noise variables, `noice1` (normal distribution) and `noice2` (uniform distribution), were added to the dataset to later assess the baseline importance of features. These noise features serve as a benchmark for determining the significance of real features.
+### Process
+- **Data Preparation**: Merged the outcome dataset with the cleaned dataset containing the selected variables to form the final dataset for modeling.
+- **Data Splitting**: The data was split into training and testing sets, with 30% of the data reserved for testing. This split helps validate the model on unseen data, ensuring that our model generalizes well beyond the training data.
+- **Model Definition**: LightGBM, a gradient boosting framework that uses tree-based learning algorithms, was chosen for its effectiveness and efficiency with large data sets.
+- **Hyperparameter Tuning**:
+  - A grid search was conducted over a specified parameter grid including `num_leaves`, `max_depth`, `learning_rate`, and `n_estimators` to find the best model configuration.
+  - Cross-validation with five folds was used during the grid search to ensure that the model's performance was robust across different subsets of the data.
+  - The grid search was configured to refit the best model based on the F1 score, balancing the precision and recall of the model.
+- **Model Evaluation**: The best model from the grid search was evaluated on the test set. Metrics such as accuracy, precision, recall, and F1 score were computed to assess the model's performance comprehensively.
 
-4. **Model Training**:
-   - A LightGBM classifier was trained using the numeric and cleaned feature set. LightGBM is chosen for its efficiency with large datasets and ability to handle various types of data.
+### Variable Importance
+We can observe in the following table the variable importance associated with the model we are using to predict fertility. One interesting result from our study is that the importance of variables presents an aggregation effect through surveys. For example, variables that present a higher importance come from the Family & Household, Economic Situation Assets, and Health surveys in that order.
 
-5. **Feature Importance Evaluation**:
-   - The importance of each feature was calculated using LightGBM's built-in feature importance metric, which measures the increase in the model's prediction error after permuting the feature.
-   - Features were sorted based on their importance, and a threshold was established based on the importance values of the noise features to filter out less relevant features.
+| Unnamed: 0 | Importance | var_label | survey |
+|------------|------------|-----------|--------|
+| cs20m415 | 179 | Preload variable: Age respondent | Family & Household |
+| brutohh_f_2020 | 145 | What is the year of birth of your mother? | Family & Household |
+| cf20m128 | 143 | Do you currently have a partner? | Family & Household |
+| cp20l193 | 138 | Do you think you will have [more] children in the future? | Family & Household |
+| lftdhhh | 132 | Duration in seconds | Family & Household |
+| cr20m120 | 132 | Duration in seconds | Economic Situation Assets |
+| ca20g075 | 129 | Age respondent | Economic Situation Assets |
+| cf20m009 | 112 | Age respondent | Economic Situation Income |
+| netinc | 105 | preloaded variable: age | Health |
+| cf20m397 | 102 | How much do you weigh, without clothes and shoes? | Health |
+| ch20m259 | 101 | gynaecologist | Health |
+| birthyear_bg | 99 | Duration in seconds | Health |
+| ch20m017 | 98 | Often forget to put things back in their proper place. | Personality |
+| cv20l303 | 91 | forgiving | Personality |
+| cw20m576 | 82 | Duration in seconds | Personality |
+| cs20m243 | 82 | It does not help a neighborhood if many people of foreign origin or descent move in. | Politics and Values |
+| cw20m002 | 79 | Duration in seconds - part 3 | Politics and Values |
+| sted_2020 | 79 | Do you speak Dutch with…your partner? | Religion and Ethnicity |
+| nettohh_f_2020 | 74 | Duration in seconds | Religion and Ethnicity |
+| burgstat_2020 | 71 | How often did you take a holiday within the Netherlands over the past 12 months? | Social Integration and Leisure |
+| oplcat_2019 | 69 | average number of days per week that time is spent on: handwork | Social Integration and Leisure |
+| cs20m102 | 68 | computer or laptop use, average number of hours per week: at work | Social Integration and Leisure |
+| ci20m002 | 64 | Duration in seconds | Social Integration and Leisure |
+| cv20l123 | 62 | average number of hours per week spent on: watching online films or TV programs | Social Integration and Leisure |
+| werving | 58 | Respondent's year of birth | Work & Schooling |
+| cp20l102 | 52 | Current income per month, based on values from the Core Questionnaire Income | Work & Schooling |
+| ca20g082 | 51 | Year of birth [imputed by PreFer organisers] | Summary Background Variables |
+| ch20m219 | 45 | Gross household income in Euros | Summary Background Variables |
+| cf20m004 | 45 | Civil status | Summary Background Variables |
+| cr20m093 | 42 | Net household income in Euros | Summary Background Variables |
+| cs20m437 | 41 | Level of education in CBS (Statistics Netherlands) categories | Summary Background Variables |
+| ch20m002 | 37 | Urban character of place of residence | Summary Background Variables |
+| cp20l047 | 27 | Age of the household head | Background Variables |
+| cs20m167 | 23 | Personal net monthly income in Euros | Background Variables |
+| cf20m024 | 16 | From which recruitment wave the household originates | Background Variables |
 
-6. **Feature Selection**:
-   - Only features with an importance greater than that of either noise feature were retained. This method ensures that selected features have a significant impact on the model's predictive power.
-   - The selected features, along with the identifier `nomem_encr`, were saved to `variable_lightGBM_importance.csv`.
 
-### Results
-- The final list of important variables was compared against another model's feature importance list (from a Random Forest model) to validate consistency and robustness across different model types.
-- The datasets `outcome_l_GBM.csv` and `cleaned_l_GBM.csv` containing the outcome and cleaned feature sets, respectively, were saved for further use in modeling or analysis.
+### Rationale
+The use of grid search and cross-validation ensures that the model is not only tuned to perform optimally in terms of prediction accuracy but is also stable and reliable across different data splits. This rigorous approach to model tuning and evaluation is crucial for developing a high-performing model that can be confidently used for making predictions.
 
-### Conclusion
-The variable selection process effectively narrowed down the feature set to those most impactful, improving the efficiency and potentially the performance of subsequent models. This approach not only enhances model simplicity but also aids in better understanding the driving factors behind the prediction of `new_child`.
+## Conclusion
+By continuously refining our approach and exploring various advanced machine learning techniques, we aim to build a model that not only predicts fertility behavior accurately but also adapts to and performs well under different analytical scenarios. Our strategy ensures that our findings are both scientifically robust and practically relevant.
